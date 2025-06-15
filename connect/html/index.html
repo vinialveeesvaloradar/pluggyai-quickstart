@@ -6,44 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body>
-    <main class="main"></main>
+    <main></main>
 
-    <!-- 1) Carrega a lib do Pluggy Connect -->
+    <!-- Biblioteca do widget -->
     <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
 
     <script>
-      // 2) Chama sua Vercel Function para gerar um connectToken válido
-      fetch('https://valoradar-pluggy-connect.vercel.app/api/connect-token', {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          options: {
-            // Troque pelo ID único do usuário se quiser rastrear sessions
-            clientUserId: "user@example.com"
-          }
+      // Chama a função Serverless que gera o connectToken
+      fetch('/api/connect-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ options: { clientUserId: 'demo@valoradar.com' } })
+      })
+        .then(r => r.json())
+        .then(({ connectToken }) => {
+          const pluggy = new PluggyConnect({
+            connectToken,
+            includeSandbox: false,
+            onSuccess: d => console.log('✅ Sucesso!', d),
+            onError:   e => console.error('❌ Erro:', e)
+          });
+          pluggy.init();
         })
-      })
-      .then(response => response.json())
-      .then(({ connectToken }) => {
-        // 3) Inicializa o widget
-        const pluggyConnect = new PluggyConnect({
-          connectToken,
-          includeSandbox: false, // false em produção
-          onSuccess: (itemData) => {
-            console.log('✅ Conexão bem-sucedida!', itemData);
-          },
-          onError: (error) => {
-            console.error('❌ Erro no Pluggy Connect:', error);
-          },
-        });
-        pluggyConnect.init();
-      })
-      .catch(err => {
-        console.error('❌ Falha ao buscar connectToken:', err);
-      });
+        .catch(e => console.error('❌ Falha buscar token:', e));
     </script>
   </body>
 </html>
