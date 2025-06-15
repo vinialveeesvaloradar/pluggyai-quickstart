@@ -7,36 +7,43 @@
   </head>
   <body>
     <main class="main"></main>
-    <script src="https://cdn.pluggy.ai/pluggy-connect/v0.1.0/pluggy-connect.js"></script>
+
+    <!-- 1) Carrega a lib do Pluggy Connect -->
+    <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
+
     <script>
-      // Use your own connect token API endpoint, this one only list sandbox connectors
-      // Reference: https://github.com/pluggyai/pluggy-connect-vercel
-      fetch('https://pluggy-connect.vercel.app/api/token', {
+      // 2) Chama sua Vercel Function para gerar um connectToken válido
+      fetch('https://valoradar-pluggy-connect.vercel.app/api/connect-token', {
         method: "POST",
         headers: {
-          Accept: "application/json",
+          "Accept": "application/json",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           options: {
+            // Troque pelo ID único do usuário se quiser rastrear sessions
             clientUserId: "user@example.com"
           }
         })
       })
-        .then((response) => response.json())
-        .then(({ accessToken }) => {
-          const pluggyConnect = new PluggyConnect({
-            connectToken: accessToken,
-            includeSandbox: true,
-            onSuccess: (itemData) => {
-              console.log('Yay! Pluggy connect success!', itemData);
-            },
-            onError: (error) => {
-              console.error('Whoops! Pluggy Connect error... ', error);
-            },
-          });
-          pluggyConnect.init();
+      .then(response => response.json())
+      .then(({ connectToken }) => {
+        // 3) Inicializa o widget
+        const pluggyConnect = new PluggyConnect({
+          connectToken,
+          includeSandbox: false, // false em produção
+          onSuccess: (itemData) => {
+            console.log('✅ Conexão bem-sucedida!', itemData);
+          },
+          onError: (error) => {
+            console.error('❌ Erro no Pluggy Connect:', error);
+          },
         });
+        pluggyConnect.init();
+      })
+      .catch(err => {
+        console.error('❌ Falha ao buscar connectToken:', err);
+      });
     </script>
   </body>
 </html>
